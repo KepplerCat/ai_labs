@@ -2,7 +2,7 @@
 Все лабораторные представленные в виде блокнотов с соответствующими названиями.
 Датасет хранится в папке data.
 
-Датасет: 6000+ Store Items Images Classified By Color.
+Датасет: 6000+ Store Items Images Classified By Color. Состоит из набора разных вещей и одежды. 12 классов.
 
 Ссылка на датасет: https://www.kaggle.com/datasets/imoore/6000-store-items-images-classified-by-color
 
@@ -30,5 +30,30 @@ Recall: 58.48%
 ![Матрица ошибок](Lab_3_output.png)
 
 ## Lab4. Улучшение показателей метрик свёрточной сети
+
+Тесты с разными аугментациями:
+
+1 тест. Только аугментации
+
+    A.Flip(p=0.3),
+    A.ElasticTransform(alpha=1.15, sigma=50, alpha_affine=10),
+    A.RandomBrightnessContrast(p=0.4),
+    A.Blur(blur_limit=3),
+    A.Normalize(
+        mean=[0.485, 0.456, 0.406], 
+        std=[0.229, 0.224, 0.225], 
+    ),
+    ToTensorV2()
+
+  Результаты ухудшились.
+  loss = 0.8410181403160095, samples = 384 accuracy 0.2620192307692308
+
+  Accuracy: 26.20%
+    
+  Precision: 29.38%
+  
+   Recall: 21.78%
+
+  ![Матрица ошибок](Lab4_1test.png)
 
 ## Lab5. Свёрточная сеть на ResNet
