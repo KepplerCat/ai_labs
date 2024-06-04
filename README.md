@@ -19,11 +19,11 @@
 
 Также были добавлены метрики:
 
-Accuracy: 63.94%
-
-Precision: 64.27%
-
-Recall: 58.48%
+|Метрика  |Значение|
+| ------- | ------:|
+|Accuracy | 63.94% |
+|Precision| 64.27% |
+|Recall   | 58.48% |
 
 И матрица ошибок:
 
@@ -33,8 +33,11 @@ Recall: 58.48%
 
 Тесты с разными аугментациями:
 
-1 тест. Только аугментации
+### 1 тест. Только аугментации
 
+Параметры аугментаций:
+
+```python
     A.Flip(p=0.3),
     A.ElasticTransform(alpha=1.15, sigma=50, alpha_affine=10),
     A.RandomBrightnessContrast(p=0.4),
@@ -44,16 +47,125 @@ Recall: 58.48%
         std=[0.229, 0.224, 0.225], 
     ),
     ToTensorV2()
+```
 
   Результаты ухудшились.
   loss = 0.8410181403160095, samples = 384 accuracy 0.2620192307692308
 
-  Accuracy: 26.20%
-    
-  Precision: 29.38%
-  
-   Recall: 21.78%
+|Метрика  |Значение|
+| ------- | ------:|
+|Accuracy | 26.20% |
+|Precision| 29.38% |
+|Recall   | 21.78% |
 
   ![Матрица ошибок](Lab4_1test.png)
+
+### 2 тест. Только аугментации
+
+Параметры аугментаций:
+
+```python
+    A.Flip(p=0.3),
+    A.Blur(blur_limit=3),
+    A.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225],
+    ),
+    ToTensorV2()
+```
+Показатели всё также хуже изначальных.
+loss = 0.8668563365936279, samples = 384, accuracy 0.2780448717948718
+
+|Метрика  |Значение|
+| ------- | ------:|
+|Accuracy | 27.80% |
+|Precision| 21.47% |
+|Recall   | 24.31% |
+
+![Матрица ошибок](Lab4_2test.png)
+
+### 3 тест. Изменение архитектуры
+
+Теперь поменяем архитектуру, добавив CSP block.
+
+Изначальный вид:
+
+```python
+    def forward(self, x):
+        x = self.conv_1(x)
+        x = F.relu(x)
+        x = self.conv_2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        
+        x = self.conv_3(x)
+        x = F.relu(x)
+        x = self.conv_4(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        
+        x = self.conv_5(x)
+        x = F.relu(x)
+        x = self.conv_6(x)
+        x = F.relu(x)
+        x = self.pool(x)
+
+        x = torch.flatten(x, start_dim=1)
+        
+        x = self.linear_1(x)
+        x = F.relu(x)
+        x = self.linear_2(x)
+        
+        return x
+```
+
+Теперь forvard выглядит следующим образом (для наглядности выделил CSP пустыми строками):
+
+```python
+    def forward(self, x):
+        x = self.conv_1(x)
+        x = F.relu(x)
+
+        x = self.csp_1(x)
+
+        x = self.conv_2(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv_3(x)
+        x = F.relu(x)
+
+       x = self.csp_2(x)
+
+        x = self.conv_4(x)
+        x = F.relu(x)
+        x = self.pool(x)
+        x = self.conv_5(x)
+        x = F.relu(x)
+
+        x = self.csp_3(x)
+
+        x = self.conv_6(x)
+        x = F.relu(x)
+        x = self.pool(x)
+
+        x = torch.flatten(x, start_dim=1)
+        
+        x = self.linear_1(x)
+        x = F.relu(x)
+        x = self.linear_2(x)
+
+        return x
+```
+
+Для чистоты эксперимента, уберём аугментации.Получились такие результаты:
+loss = 0.9860660433769226, samples = 384, accuracy 0.592948717948718
+|Метрика  |Значение|
+| ------- | ------:|
+|Accuracy | 59.29% |
+|Precision| 54.85% |
+|Recall   | 54.50% |
+
+![Матрица ошибок](Lab4_3test.png)
+
 
 ## Lab5. Свёрточная сеть на ResNet
